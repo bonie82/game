@@ -1,526 +1,328 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🌀 Rasengan Mode</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#04080f;
-  --blue:#57c8ff;
-  --white:#e8f4ff;
-  --glow:#1a8fff;
-  --orange:#ff7c2a;
-  --red:#ff3a1a;
-}
-body{
-  background:var(--bg);
-  font-family:'Rajdhani',sans-serif;
-  color:#fff;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎮 Game Center</title>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FFF8F0;
+      --peach: #FFD6B8;
+      --coral: #D85A30;
+      --coral-dark: #B84520;
+      --rose: #F4A0B0;
+      --rose-dark: #D07080;
+      --soft-purple: #C8A8E0;
+      --text: #3A2010;
+      --text-soft: #8B5E3C;
+    }
 
-/* stars bg */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background-image:
-    radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
-    radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
-    radial-gradient(1px 1px at 50% 80%, rgba(255,255,255,0.25) 0%, transparent 100%),
-    radial-gradient(1px 1px at 10% 70%, rgba(255,255,255,0.2) 0%, transparent 100%),
-    radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.3) 0%, transparent 100%);
-  pointer-events:none;z-index:0;
-}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.scene{position:relative;z-index:1;width:100%;max-width:900px;padding:1rem;}
+    html, body {
+      width: 100%; min-height: 100vh;
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      overflow-x: hidden;
+    }
 
-.title-bar{text-align:center;margin-bottom:1rem;}
-.title-bar h1{
-  font-family:'Cinzel',serif;
-  font-size:clamp(20px,4vw,38px);
-  font-weight:900;
-  letter-spacing:4px;
-  background:linear-gradient(135deg,#57c8ff,#ffffff,#57c8ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  text-shadow:none;
-  margin-bottom:4px;
-}
-.title-bar p{font-size:12px;color:rgba(87,200,255,0.6);letter-spacing:2px;text-transform:uppercase;}
+    /* ── Falling petals background ── */
+    #petal-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
 
-.main-layout{display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start;}
-@media(max-width:660px){.main-layout{grid-template-columns:1fr;}}
+    /* ── Main layout ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px 60px;
+      gap: 40px;
+    }
 
-/* Camera */
-.cam-box{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;border:1px solid rgba(87,200,255,0.2);box-shadow:0 0 40px rgba(87,200,255,0.08);}
-#video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1);}
-#canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);}
+    /* ── Header ── */
+    .header { text-align: center; }
 
-.cam-corners span{position:absolute;width:18px;height:18px;border-color:var(--blue);border-style:solid;opacity:0.7;}
-.cam-corners span:nth-child(1){top:8px;left:8px;border-width:2px 0 0 2px;}
-.cam-corners span:nth-child(2){top:8px;right:8px;border-width:2px 2px 0 0;}
-.cam-corners span:nth-child(3){bottom:8px;left:8px;border-width:0 0 2px 2px;}
-.cam-corners span:nth-child(4){bottom:8px;right:8px;border-width:0 2px 2px 0;}
+    .header-tag {
+      display: inline-block;
+      font-family: 'Baloo 2', cursive;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--coral); background: #FFE8D8;
+      border: 1.5px solid #F4C8A8;
+      border-radius: 50px; padding: 4px 14px;
+      margin-bottom: 14px;
+      animation: fadeDown 0.6s ease both;
+    }
 
-.cam-start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(4,8,15,0.9);transition:opacity .3s;}
-.cam-start.gone{opacity:0;pointer-events:none;}
-.cam-start p{font-size:12px;color:rgba(87,200,255,0.7);text-align:center;max-width:200px;letter-spacing:1px;}
-.start-btn{
-  border:1.5px solid var(--blue);border-radius:6px;
-  background:transparent;color:var(--blue);
-  font-family:'Cinzel',serif;font-weight:700;font-size:13px;
-  padding:10px 28px;cursor:pointer;letter-spacing:2px;
-  transition:all .2s;
-}
-.start-btn:hover{background:var(--blue);color:#000;}
+    .header h1 {
+      font-family: 'Baloo 2', cursive;
+      font-size: clamp(32px, 7vw, 56px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+      animation: fadeDown 0.7s ease 0.1s both;
+    }
 
-/* Sidebar */
-.sidebar{display:flex;flex-direction:column;gap:10px;}
+    .header h1 span { color: var(--coral); }
 
-.chakra-panel{
-  background:rgba(10,18,35,0.9);
-  border:1px solid rgba(87,200,255,0.2);
-  border-radius:12px;padding:16px;
-  text-align:center;
-  position:relative;overflow:hidden;
-}
-.chakra-panel::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at center,rgba(87,200,255,0.05),transparent 70%);
-}
-.cp-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(87,200,255,0.5);margin-bottom:8px;}
-.chakra-orb{
-  width:90px;height:90px;border-radius:50%;margin:0 auto 10px;
-  background:radial-gradient(circle,rgba(87,200,255,0.1),transparent 70%);
-  border:1px solid rgba(87,200,255,0.2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:36px;
-  position:relative;
-  transition:all .3s;
-}
-.chakra-orb.charging{
-  background:radial-gradient(circle,rgba(87,200,255,0.3),rgba(87,200,255,0.05) 60%,transparent 80%);
-  border-color:rgba(87,200,255,0.6);
-  box-shadow:0 0 30px rgba(87,200,255,0.4),inset 0 0 20px rgba(87,200,255,0.1);
-  animation:orbPulse .6s ease-in-out infinite alternate;
-}
-.chakra-orb.full{
-  background:radial-gradient(circle,rgba(87,200,255,0.5),rgba(87,200,255,0.1) 60%,transparent 80%);
-  border-color:var(--blue);
-  box-shadow:0 0 60px rgba(87,200,255,0.7),0 0 20px rgba(87,200,255,0.4),inset 0 0 30px rgba(87,200,255,0.2);
-  animation:orbFull .4s ease-in-out infinite alternate;
-}
-@keyframes orbPulse{0%{transform:scale(1)}100%{transform:scale(1.05)}}
-@keyframes orbFull{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.08) rotate(5deg)}}
+    .header p {
+      margin-top: 10px;
+      font-size: 15px; color: var(--text-soft);
+      animation: fadeDown 0.7s ease 0.2s both;
+    }
 
-.jutsu-name{font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--blue);min-height:24px;letter-spacing:1px;}
-.jutsu-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-top:3px;}
+    /* ── Cards grid ── */
+    .cards {
+      display: flex; flex-wrap: wrap;
+      gap: 24px; justify-content: center;
+      max-width: 720px; width: 100%;
+    }
 
-.charge-bar-wrap{margin-top:12px;}
-.cb-label{display:flex;justify-content:space-between;font-size:9px;color:rgba(87,200,255,0.5);letter-spacing:1px;margin-bottom:4px;}
-.cb-track{height:4px;background:rgba(87,200,255,0.1);border-radius:2px;overflow:hidden;}
-.cb-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#1a5fff,var(--blue));width:0%;transition:width .15s;}
+    .card {
+      position: relative;
+      width: 300px;
+      background: #fff;
+      border-radius: 28px;
+      padding: 32px 28px 28px;
+      text-decoration: none;
+      box-shadow: 0 4px 0 #E8C8A0, 0 8px 32px rgba(180,100,50,0.10);
+      border: 1.5px solid #F0DCC8;
+      overflow: hidden;
+      transition: transform 0.18s cubic-bezier(.34,1.56,.64,1),
+                  box-shadow 0.18s ease;
+      animation: fadeUp 0.7s ease both;
+    }
 
-.gestures-guide{
-  background:rgba(10,18,35,0.9);
-  border:1px solid rgba(87,200,255,0.15);
-  border-radius:12px;padding:14px;
-}
-.gg-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(87,200,255,0.4);margin-bottom:10px;}
-.gg-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;margin-bottom:4px;border:1px solid transparent;transition:all .2s;}
-.gg-item.lit{background:rgba(87,200,255,0.07);border-color:rgba(87,200,255,0.2);}
-.gg-emoji{font-size:18px;width:26px;text-align:center;}
-.gg-info .gg-name{font-size:12px;font-weight:700;color:#fff;}
-.gg-info .gg-effect{font-size:10px;color:rgba(87,200,255,0.5);}
-.gg-dot{width:5px;height:5px;border-radius:50%;background:rgba(87,200,255,0.2);transition:all .2s;flex-shrink:0;}
-.gg-item.lit .gg-dot{background:var(--blue);box-shadow:0 0 8px var(--blue);}
+    .card:nth-child(1) { animation-delay: 0.25s; }
+    .card:nth-child(2) { animation-delay: 0.38s; }
 
-.log-panel{
-  background:rgba(10,18,35,0.9);
-  border:1px solid rgba(87,200,255,0.15);
-  border-radius:12px;padding:12px;
-  max-height:110px;overflow:hidden;
-}
-.log-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(87,200,255,0.4);margin-bottom:8px;}
-.log-line{font-size:11px;color:rgba(87,200,255,0.7);font-family:'Rajdhani',sans-serif;padding:2px 0;animation:fadeSlide .3s ease;}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 10px 0 #D8A880, 0 20px 48px rgba(180,100,50,0.18);
+    }
+    .card:active { transform: translateY(-2px) scale(0.99); }
 
-/* Rasengan Canvas Overlay for fullscreen flash */
-#flashOverlay{
-  position:fixed;inset:0;pointer-events:none;z-index:999;
-  background:radial-gradient(ellipse at center,rgba(87,200,255,0.6),transparent 70%);
-  opacity:0;transition:opacity .1s;
-}
-</style>
+    /* Decorative blob */
+    .card::before {
+      content: '';
+      position: absolute; top: -30px; right: -30px;
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      opacity: 0.18;
+      transition: transform 0.3s ease;
+    }
+    .card:hover::before { transform: scale(1.2); }
+    .card-kimchi::before { background: var(--coral); }
+    .card-memory::before { background: var(--rose); }
+
+    .card-emoji {
+      font-size: 52px; line-height: 1;
+      margin-bottom: 16px;
+      display: block;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.10));
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .card:hover .card-emoji { transform: scale(1.15) rotate(-5deg); }
+
+    .card-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .card-kimchi .card-label { color: var(--coral); }
+    .card-memory .card-label { color: var(--rose-dark); }
+
+    .card h2 {
+      font-family: 'Baloo 2', cursive;
+      font-size: 22px; font-weight: 800;
+      color: var(--text); margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    .card p {
+      font-size: 13px; color: var(--text-soft);
+      line-height: 1.6; margin-bottom: 22px;
+    }
+
+    .card-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px;
+      border-radius: 50px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px; font-weight: 700;
+      color: #fff; border: none;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+    }
+    .card-btn:active { transform: translateY(2px); box-shadow: none; }
+    .card-kimchi .card-btn { background: linear-gradient(135deg, var(--coral), #F07840); }
+    .card-memory .card-btn { background: linear-gradient(135deg, #E080A0, var(--rose-dark)); }
+
+    .card-btn svg { width: 15px; height: 15px; }
+
+    /* ── Tag chips on cards ── */
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .tag {
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      border-radius: 50px; background: #FFF0E4; color: var(--text-soft);
+      border: 1px solid #F0D8C0;
+    }
+    .card-memory .tag { background: #FFF0F4; border-color: #F0C8D4; color: var(--rose-dark); }
+
+    /* ── Footer ── */
+    .footer {
+      font-size: 12px; color: #C0A090; text-align: center;
+      animation: fadeDown 0.8s ease 0.5s both;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .card { width: 100%; max-width: 340px; }
+    }
+  </style>
 </head>
 <body>
-<div id="flashOverlay"></div>
-<div class="scene">
-  <div class="title-bar">
-    <h1>🌀 RASENGAN MODE</h1>
-    <p>Ninjutsu Hand Tracking System</p>
+
+<canvas id="petal-canvas"></canvas>
+
+<div class="page">
+  <div class="header">
+    <div class="header-tag">🌸 Mini Game Collection</div>
+    <h1>Game <span>Center</span> 🎮</h1>
+    <p>Chọn một trò chơi để bắt đầu nhé!</p>
   </div>
 
-  <div class="main-layout">
-    <!-- Camera -->
-    <div class="cam-box">
-      <video id="video" autoplay playsinline muted></video>
-      <canvas id="canvas"></canvas>
-      <div class="cam-corners">
-        <span></span><span></span><span></span><span></span>
-      </div>
-      <div class="cam-start" id="camStart">
-        <div style="font-size:48px;">🌀</div>
-        <p>Kích hoạt hệ thống nhận diện Chakra</p>
-        <button class="start-btn" onclick="startCamera()">KÍCH HOẠT</button>
-      </div>
-    </div>
+  <div class="cards">
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="chakra-panel">
-        <div class="cp-label">Trạng thái Chakra</div>
-        <div class="chakra-orb" id="chakraOrb">🌀</div>
-        <div class="jutsu-name" id="jutsuName">Chờ tay...</div>
-        <div class="jutsu-sub" id="jutsuSub">Đưa tay vào khung hình</div>
-        <div class="charge-bar-wrap">
-          <div class="cb-label"><span>CHARGE</span><span id="chargeVal">0%</span></div>
-          <div class="cb-track"><div class="cb-fill" id="chargeFill"></div></div>
-        </div>
+    <!-- Kimchi Catch -->
+    <a class="card card-kimchi" href="kimchi_catch.html.html">
+      <span class="card-emoji">🍱</span>
+      <span class="card-label">Hành động</span>
+      <h2>Hứng Đồ Ăn Hàn Quốc</h2>
+      <div class="card-tags">
+        <span class="tag">⭐ Power-up</span>
+        <span class="tag">👻 Ma ám</span>
+        <span class="tag">🏅 Huy hiệu</span>
       </div>
+      <p>Hứng các món ăn Hàn đang rơi, tránh bom và ma. Tốc độ tăng dần theo cấp độ!</p>
+      <span class="card-btn">
+        Chơi ngay
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
 
-      <div class="gestures-guide">
-        <div class="gg-title">Cử chỉ Jutsu</div>
-        <div id="gestureGuide"></div>
+    <!-- Memory Game -->
+    <a class="card card-memory" href="memory game.html">
+      <span class="card-emoji">🧠</span>
+      <span class="card-label">Trí nhớ</span>
+      <h2>Memory Game</h2>
+      <div class="card-tags">
+        <span class="tag">🃏 Lật bài</span>
+        <span class="tag">⏱️ Tính giờ</span>
+        <span class="tag">🏆 Xếp hạng</span>
       </div>
+      <p>Lật và ghép các cặp bài giống nhau. Thử thách trí nhớ và tốc độ phản xạ!</p>
+      <span class="card-btn">
+        Chơi ngay
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
 
-      <div class="log-panel">
-        <div class="log-title">Jutsu Log</div>
-        <div id="logLines"></div>
-      </div>
-    </div>
   </div>
+
+  <div class="footer">Làm bằng ❤️ · 2025</div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
-// ——— Jutsu definitions ———
-const JUTSU = [
-  { id:'rasengan', emoji:'🌀', name:'RASENGAN',      desc:'Xòe 5 ngón tay',  gesture:'open',    color:'#57c8ff', glow:'rgba(87,200,255,0.8)' },
-  { id:'kage',     emoji:'👥', name:'KAGE BUNSHIN',  desc:'Nắm đấm',          gesture:'fist',    color:'#ff7c2a', glow:'rgba(255,124,42,0.8)' },
-  { id:'chidori',  emoji:'⚡', name:'CHIDORI',       desc:'2 ngón — peace',   gesture:'peace',   color:'#ffffff', glow:'rgba(255,255,255,0.9)' },
-  { id:'fire',     emoji:'🔥', name:'FIREBALL',      desc:'Ngón cái lên',     gesture:'thumbsup',color:'#ff4400', glow:'rgba(255,68,0,0.8)' },
-  { id:'point',    emoji:'💢', name:'JYUKEN',        desc:'1 ngón trỏ',       gesture:'point',   color:'#aa77ff', glow:'rgba(170,119,255,0.8)' },
-  { id:'rock',     emoji:'🤘', name:'ROCK LEE KICK', desc:'Ngón cái + út',    gesture:'rockon',  color:'#ff5588', glow:'rgba(255,85,136,0.8)' },
+// ── Falling petals engine ──
+const cv = document.getElementById('petal-canvas');
+const cx = cv.getContext('2d');
+
+function resizeCv(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
+window.addEventListener('resize', resizeCv); resizeCv();
+
+const PETAL_TYPES = [
+  { // sakura oval
+    draw(c,s,r){ c.save();c.rotate(r);c.beginPath();c.ellipse(0,0,s,s*0.48,0,0,Math.PI*2);c.fill();c.restore(); },
+    colors:['#FFB7C5','#FFC8D4','#FF8FAB','#FFD6E0','#FFAEC0','#FFA0B8']
+  },
+  { // teardrop petal
+    draw(c,s,r){ c.save();c.rotate(r);c.beginPath();c.moveTo(0,-s);c.quadraticCurveTo(s*0.75,-s*0.25,0,s*0.6);c.quadraticCurveTo(-s*0.75,-s*0.25,0,-s);c.fill();c.restore(); },
+    colors:['#FFD0DC','#FFC0CC','#FFAABB','#FFE0EA']
+  },
+  { // small round dot
+    draw(c,s,r){ c.save();c.rotate(r);c.beginPath();c.arc(0,0,s*0.55,0,Math.PI*2);c.fill();c.restore(); },
+    colors:['#FDE2EE','#F9C8E0','#FFCCE0','#FFB8D0']
+  }
 ];
 
-function renderGuide(activeId=null){
-  document.getElementById('gestureGuide').innerHTML = JUTSU.map(j=>`
-    <div class="gg-item ${activeId===j.id?'lit':''}" id="gg-${j.id}">
-      <span class="gg-emoji">${j.emoji}</span>
-      <div class="gg-info">
-        <div class="gg-name">${j.name}</div>
-        <div class="gg-effect">${j.desc}</div>
-      </div>
-      <div class="gg-dot"></div>
-    </div>`).join('');
-}
-renderGuide();
+let petals = [];
+let spawnT = 0;
 
-// ——— Log ———
-let logs = [];
-function addLog(txt){
-  logs.unshift(txt);
-  if(logs.length>5) logs.pop();
-  document.getElementById('logLines').innerHTML = logs.map(l=>`<div class="log-line">${l}</div>`).join('');
-}
-
-// ——— Particle system ———
-const particles = [];
-function spawnParticle(x,y,color,vx=0,vy=0){
-  particles.push({x,y,vx:vx+(Math.random()-0.5)*4,vy:vy+(Math.random()-0.5)*4,life:1,color,size:Math.random()*5+2});
-}
-
-// ——— Rasengan orb state ———
-let charge = 0;
-let currentJutsu = null;
-let orbAngle = 0;
-let flashTimer = 0;
-let jutsuParticleTimer = 0;
-
-// ——— Gesture detection ———
-function fingerUp(lm,tip,pip){ return lm[tip].y < lm[pip].y; }
-function thumbOut(lm){ return Math.abs(lm[4].x - lm[2].x) > 0.05; }
-
-function detectGesture(lm){
-  const idx  = fingerUp(lm,8,6);
-  const mid  = fingerUp(lm,12,10);
-  const ring = fingerUp(lm,16,14);
-  const pink = fingerUp(lm,20,18);
-  const thm  = thumbOut(lm);
-
-  if(thm&&idx&&mid&&ring&&pink) return 'open';
-  if(!idx&&!mid&&!ring&&!pink)  return 'fist';
-  if(idx&&mid&&!ring&&!pink)    return 'peace';
-  if(thm&&!idx&&!mid&&!ring&&!pink) return 'thumbsup';
-  if(idx&&!mid&&!ring&&!pink&&!thm) return 'point';
-  if(!thm&&idx&&!mid&&!ring&&pink)  return 'rockon';
-  return null;
-}
-
-// ——— Canvas drawing ———
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
-function getPalmCenter(lm, w, h){
-  // Average of wrist + MCP joints
-  const pts = [0,5,9,13,17];
-  let sx=0,sy=0;
-  pts.forEach(i=>{ sx+=lm[i].x; sy+=lm[i].y; });
-  return { x:(sx/pts.length)*w, y:(sy/pts.length)*h };
-}
-
-function drawRasengan(cx, cy, radius, jutsu, chargeLevel){
-  const t = Date.now()/1000;
-  const col = jutsu.color;
-  const glowCol = jutsu.glow;
-
-  ctx.save();
-
-  // Outer glow rings
-  for(let r=0;r<3;r++){
-    const ringR = radius*(1.2+r*0.4) + Math.sin(t*3+r)*4;
-    ctx.beginPath();
-    ctx.arc(cx,cy,ringR,0,Math.PI*2);
-    ctx.strokeStyle = col.replace(')',`,${0.15-r*0.04})`).replace('rgb','rgba').replace('#',col+'33');
-    ctx.lineWidth = 2-r*0.5;
-    // fallback simple stroke
-    ctx.strokeStyle = `${col}${Math.floor((0.5-r*0.12)*255).toString(16).padStart(2,'0')}`;
-    ctx.stroke();
-  }
-
-  // Core gradient orb
-  const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,radius);
-  grad.addColorStop(0,'rgba(255,255,255,0.95)');
-  grad.addColorStop(0.2, col+'ee');
-  grad.addColorStop(0.6, col+'88');
-  grad.addColorStop(1,'transparent');
-  ctx.beginPath();
-  ctx.arc(cx,cy,radius,0,Math.PI*2);
-  ctx.fillStyle = grad;
-  ctx.fill();
-
-  // Spinning spiral lines
-  const numLines = jutsu.id==='chidori'?12:8;
-  for(let i=0;i<numLines;i++){
-    const angle = (i/numLines)*Math.PI*2 + orbAngle*(jutsu.id==='chidori'?3:1);
-    const x2 = cx + Math.cos(angle)*radius*0.85;
-    const y2 = cy + Math.sin(angle)*radius*0.85;
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.lineTo(x2,y2);
-    ctx.strokeStyle = jutsu.id==='chidori' ? 'rgba(255,255,255,0.8)' : col+'cc';
-    ctx.lineWidth = jutsu.id==='chidori' ? 1.5 : 2;
-    ctx.stroke();
-  }
-
-  // Special effects per jutsu
-  if(jutsu.id==='rasengan'){
-    // Blue energy rings swirling
-    for(let i=0;i<3;i++){
-      ctx.beginPath();
-      ctx.ellipse(cx,cy,radius*0.7,radius*0.35,orbAngle*2+i*(Math.PI/3*2),0,Math.PI*2);
-      ctx.strokeStyle='rgba(87,200,255,0.6)';
-      ctx.lineWidth=2;
-      ctx.stroke();
-    }
-  }else if(jutsu.id==='chidori'){
-    // Lightning bolts
-    for(let i=0;i<6;i++){
-      const a = (i/6)*Math.PI*2 + orbAngle*4;
-      const lx = cx+Math.cos(a)*radius;
-      const ly = cy+Math.sin(a)*radius;
-      ctx.beginPath();
-      ctx.moveTo(cx,cy);
-      ctx.lineTo(lx+(Math.random()-0.5)*20,ly+(Math.random()-0.5)*20);
-      ctx.strokeStyle='rgba(255,255,255,0.9)';
-      ctx.lineWidth=1.5;
-      ctx.stroke();
-    }
-  }else if(jutsu.id==='fire'){
-    // Flame aura
-    for(let i=0;i<8;i++){
-      const fa = (i/8)*Math.PI*2+orbAngle;
-      const fr = radius*(0.8+Math.sin(t*5+i)*0.3);
-      ctx.beginPath();
-      ctx.arc(cx+Math.cos(fa)*fr*0.4,cy+Math.sin(fa)*fr*0.4,radius*0.3,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,${80+i*10},0,0.15)`;
-      ctx.fill();
-    }
-  }
-
-  // Charge indicator arc
-  ctx.beginPath();
-  ctx.arc(cx,cy,radius+8,-Math.PI/2,-Math.PI/2+Math.PI*2*chargeLevel);
-  ctx.strokeStyle=col;
-  ctx.lineWidth=3;
-  ctx.lineCap='round';
-  ctx.stroke();
-
-  ctx.restore();
-}
-
-// ——— Main render loop ———
-let lastGesture = null;
-let stableCount = 0;
-
-function onResults(results){
-  canvas.width = video.videoWidth||640;
-  canvas.height = video.videoHeight||480;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  const W = canvas.width, H = canvas.height;
-
-  // Draw particles
-  for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i];
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.08; p.life-=0.02;
-    if(p.life<=0){particles.splice(i,1);continue;}
-    ctx.save();
-    ctx.globalAlpha=p.life;
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);
-    ctx.fillStyle=p.color;
-    ctx.fill();
-    ctx.restore();
-  }
-
-  if(!results.multiHandLandmarks||!results.multiHandLandmarks.length){
-    // Fade out
-    charge = Math.max(0, charge-0.03);
-    currentJutsu = null;
-    updateUI(null,0);
-    lastGesture=null; stableCount=0;
-    return;
-  }
-
-  // Draw skeleton (subtle)
-  for(const lm of results.multiHandLandmarks){
-    drawConnectors(ctx,lm,HAND_CONNECTIONS,{color:'rgba(87,200,255,0.15)',lineWidth:1});
-    drawLandmarks(ctx,lm,{color:'rgba(87,200,255,0.3)',fillColor:'rgba(87,200,255,0.1)',radius:2,lineWidth:1});
-  }
-
-  const lm = results.multiHandLandmarks[0];
-  const gesture = detectGesture(lm);
-  const palm = getPalmCenter(lm, W, H);
-
-  // Stable gesture detection
-  if(gesture===lastGesture){
-    stableCount = Math.min(stableCount+1,15);
-  } else {
-    stableCount = 0;
-    lastGesture = gesture;
-  }
-
-  if(gesture && stableCount>=4){
-    const jutsu = JUTSU.find(j=>j.gesture===gesture);
-    if(jutsu){
-      currentJutsu = jutsu;
-      charge = Math.min(1, charge+0.025);
-
-      // Spawn ambient particles
-      jutsuParticleTimer++;
-      if(jutsuParticleTimer%3===0){
-        const angle = Math.random()*Math.PI*2;
-        const dist = 30+Math.random()*60;
-        spawnParticle(
-          palm.x+Math.cos(angle)*dist,
-          palm.y+Math.sin(angle)*dist,
-          jutsu.color,
-          -Math.cos(angle)*1.5, -Math.sin(angle)*1.5
-        );
-      }
-
-      // Draw the orb on palm
-      const radius = 28 + charge*32;
-      drawRasengan(palm.x, palm.y, radius, jutsu, charge);
-
-      // Flash at full charge
-      if(charge>=0.99 && flashTimer===0){
-        flashTimer=20;
-        addLog(`⚡ ${jutsu.name} fully charged!`);
-        for(let i=0;i<30;i++)
-          spawnParticle(palm.x,palm.y,jutsu.color);
-      }
-
-      updateUI(jutsu, charge);
-    }
-  } else {
-    charge = Math.max(0, charge-0.04);
-    if(charge===0) currentJutsu=null;
-    updateUI(null,charge);
-  }
-
-  // Flash overlay
-  if(flashTimer>0){
-    flashTimer--;
-    document.getElementById('flashOverlay').style.opacity = (flashTimer/20*0.5).toString();
-    if(currentJutsu){
-      document.getElementById('flashOverlay').style.background =
-        `radial-gradient(ellipse at center,${currentJutsu.glow},transparent 70%)`;
-    }
-  } else {
-    document.getElementById('flashOverlay').style.opacity='0';
-  }
-
-  orbAngle += currentJutsu?.id==='chidori' ? 0.15 : 0.06;
-}
-
-function updateUI(jutsu, chargeLevel){
-  const orb = document.getElementById('chakraOrb');
-  const pct = Math.round(chargeLevel*100);
-  document.getElementById('chargeFill').style.width=pct+'%';
-  document.getElementById('chargeVal').textContent=pct+'%';
-
-  if(!jutsu||chargeLevel<0.01){
-    orb.className='chakra-orb';
-    document.getElementById('jutsuName').textContent='Chờ tay...';
-    document.getElementById('jutsuSub').textContent='Đưa tay vào khung hình';
-    renderGuide(null);
-    return;
-  }
-  orb.className='chakra-orb '+(chargeLevel>=1?'full':'charging');
-  document.getElementById('chakraOrb').textContent=jutsu.emoji;
-  document.getElementById('jutsuName').textContent=jutsu.name;
-  document.getElementById('jutsuSub').textContent=chargeLevel>=1?'⚡ MAX POWER!':jutsu.desc;
-  renderGuide(jutsu.id);
-}
-
-// ——— Start ———
-async function startCamera(){
-  document.getElementById('camStart').classList.add('gone');
-  addLog('🌀 Hệ thống Chakra đã kích hoạt');
-
-  const hands = new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:0.7,minTrackingConfidence:0.6});
-  hands.onResults(onResults);
-
-  const camera = new Camera(video,{
-    onFrame: async()=>{ await hands.send({image:video}); },
-    width:640, height:480,
+function spawnPetal(){
+  const type = PETAL_TYPES[Math.floor(Math.random()*PETAL_TYPES.length)];
+  petals.push({
+    x: Math.random() * cv.width,
+    y: -16,
+    vx: (Math.random()-0.5)*0.7,
+    vy: 0.55 + Math.random()*0.95,
+    rot: Math.random()*Math.PI*2,
+    rv: (Math.random()-0.5)*0.035,
+    s: 5 + Math.random()*9,
+    swing: Math.random()*Math.PI*2,
+    swingSpd: 0.016 + Math.random()*0.018,
+    swingAmp: 0.35 + Math.random()*1.1,
+    alpha: 0.45 + Math.random()*0.4,
+    fadeY: cv.height * (0.68 + Math.random()*0.28),
+    type,
+    color: type.colors[Math.floor(Math.random()*type.colors.length)]
   });
-  camera.start();
 }
+
+function animPetals(){
+  cx.clearRect(0, 0, cv.width, cv.height);
+
+  spawnT++;
+  if(spawnT >= 8){ spawnPetal(); spawnT = 0; }
+  if(petals.length > 100) petals.splice(0, 6);
+
+  petals = petals.filter(p => p.y < cv.height + 20 && p.alpha > 0.02);
+
+  petals.forEach(p => {
+    p.swing += p.swingSpd;
+    p.x += p.vx + Math.sin(p.swing) * p.swingAmp;
+    p.y += p.vy;
+    p.rot += p.rv;
+    if(p.y > p.fadeY) p.alpha -= 0.007;
+
+    cx.save();
+    cx.globalAlpha = Math.max(0, p.alpha);
+    cx.fillStyle = p.color;
+    cx.translate(p.x, p.y);
+    p.type.draw(cx, p.s, p.rot);
+    cx.restore();
+  });
+
+  requestAnimationFrame(animPetals);
+}
+
+animPetals();
 </script>
 </body>
 </html>
